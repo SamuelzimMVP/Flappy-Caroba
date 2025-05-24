@@ -93,7 +93,7 @@
         // Atualiza e desenha canos
         for (let i = pipes.length - 1; i >= 0; i--) {
           const p = pipes[i];
-          p.x -= 2; // velocidade do cano
+          p.x -= 1.0; // velocidade do cano
 
           // remove cano fora da tela
           if (p.x + PIPE_W < 0) pipes.splice(i, 1);
