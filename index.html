@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flappy Bird em JavaScript</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { display: flex; justify-content: center; align-items: center; height: 100vh; background: #70c5ce; font-family: sans-serif; }
+    canvas { background: #70c5ce; border: 2px solid #333; }
+    #ui { position: absolute; top: 20px; left: 0; right: 0; text-align: center; font-size: 2rem; font-weight: bold; color: #fff; text-shadow: 1px 1px 2px #000; pointer-events: none; }
+  </style>
+</head>
+<body>
+  <div id="ui">0</div>
+  <canvas id="game" width="400" height="512"></canvas>
+
+  <script>
+    // Obtenha o contexto de desenho
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const ui  = document.getElementById('ui');
+
+    // Parâmetros do jogo
+    const GRAVITY = 0.5;
+    const JUMP    = -8;
+    const GAP     = 120; // distância vertical entre canos
+    const PIPE_W  = 60;
+    const PIPE_FREQ = 90; // frames
+
+    let frame   = 0;
+    let score   = 0;
+    let pipes   = [];
+    let playing = false;
+
+    // Objeto do pássaro
+    const bird = {
+      x: 80,
+      y: canvas.height / 2,
+      r: 12,
+      vel: 0,
+      update() {
+        this.vel += GRAVITY;
+        this.y += this.vel;
+      },
+      jump() {
+        this.vel = JUMP;
+      },
+      draw() {
+        ctx.fillStyle = '#ffeb3b';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+        ctx.fill();
+      },
+      reset() {
+        this.y = canvas.height / 2;
+        this.vel = 0;
+      }
+    };
+
+    // Cria um par de canos
+    function addPipe() {
+      const topH = Math.random() * (canvas.height - GAP - 100) + 20; // altura do cano superior
+      pipes.push({
+        x: canvas.width,
+        top: topH,
+        bottom: topH + GAP
+      });
+    }
+
+    // Reiniciar jogo
+    function resetGame() {
+      pipes = [];
+      frame = 0;
+      score = 0;
+      bird.reset();
+      ui.textContent = score;
+      playing = true;
+    }
+
+    // Loop principal
+    function loop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Fundo
+      ctx.fillStyle = '#70c5ce';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      if (playing) {
+        // Adiciona canos
+        if (frame % PIPE_FREQ === 0) addPipe();
+
+        // Atualiza e desenha canos
+        for (let i = pipes.length - 1; i >= 0; i--) {
+          const p = pipes[i];
+          p.x -= 2; // velocidade do cano
+
+          // remove cano fora da tela
+          if (p.x + PIPE_W < 0) pipes.splice(i, 1);
+
+          // colisão
+          if (
+            bird.x + bird.r > p.x && bird.x - bird.r < p.x + PIPE_W &&
+            (bird.y - bird.r < p.top || bird.y + bird.r > p.bottom)
+          ) {
+            playing = false;
+          }
+
+          // pontuação
+          if (p.x + PIPE_W === Math.floor(bird.x - 2)) {
+            score++;
+            ui.textContent = score;
+          }
+
+          // Desenha cano superior
+          ctx.fillStyle = '#2ecc40';
+          ctx.fillRect(p.x, 0, PIPE_W, p.top);
+          // Desenha cano inferior
+          ctx.fillRect(p.x, p.bottom, PIPE_W, canvas.height - p.bottom);
+        }
+
+        // Atualiza pássaro
+        bird.update();
+
+        // Colisão com chão ou teto
+        if (bird.y + bird.r > canvas.height || bird.y - bird.r < 0) playing = false;
+      } else {
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 28px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Clique ou pressione espaço para começar', canvas.width / 2, canvas.height / 2);
+      }
+
+      // Desenha o pássaro por cima
+      bird.draw();
+
+      frame++;
+      requestAnimationFrame(loop);
+    }
+
+    // Controle de entrada
+    function onJump() {
+      if (!playing) {
+        resetGame();
+      }
+      bird.jump();
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') onJump();
+    });
+    canvas.addEventListener('mousedown', onJump);
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); onJump(); });
+
+    // Inicia o loop
+    loop();
+  </script>
+</body>
+</html>
