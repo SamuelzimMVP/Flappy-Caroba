@@ -13,7 +13,7 @@
 </head>
 <body>
   <div id="ui">0</div>
-  <canvas id="game" width="400" height="512"></canvas>
+  <canvas id="game" width="900" height="450"></canvas>
 
   <script>
     // Obtenha o contexto de desenho
@@ -22,11 +22,11 @@
     const ui  = document.getElementById('ui');
 
     // Parâmetros do jogo
-    const GRAVITY = 0.25;
-    const JUMP    = -6;
+    const GRAVITY = 0.20;
+    const JUMP    = -6.0;
     const GAP     = 120; // distância vertical entre canos
-    const PIPE_W  = 60;
-    const PIPE_FREQ = 160; // frames
+    const PIPE_W  = 30;
+    const PIPE_FREQ = 350; // frames
 
     let frame   = 0;
     let score   = 0;
@@ -35,7 +35,7 @@
 
     // Objeto do pássaro
     const bird = {
-      x: 80,
+      x: 60,
       y: canvas.height / 2,
       r: 12,
       vel: 0,
@@ -56,7 +56,7 @@
       
     };
     const birdImg = new Image();
-    birdImg.src = "bird.jpg";
+    birdImg.src = "bird.png";
 
     // Cria um par de canos
     function addPipe() {
@@ -87,13 +87,15 @@
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       if (playing) {
+        
+        
         // Adiciona canos
         if (frame % PIPE_FREQ === 0) addPipe();
 
         // Atualiza e desenha canos
         for (let i = pipes.length - 1; i >= 0; i--) {
           const p = pipes[i];
-          p.x -= 1.0; // velocidade do cano
+          p.x -= 1.3; // velocidade do cano
 
           // remove cano fora da tela
           if (p.x + PIPE_W < 0) pipes.splice(i, 1);
